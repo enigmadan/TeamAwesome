@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -12,7 +13,7 @@
 int ls(void){
     //struct stat *buf;
     //char *path;
-  DIR           *d;
+  DIR *d;
   struct dirent *dir;
   d = opendir(".");
   if (d)
@@ -30,23 +31,36 @@ int ls(void){
   return(0);
 }
 //void cd();
-//void cat();
+void cat(int argc, char **argv){
+    printf("%d\n", argc);
+    int fileNum;
+    int line;
+    char buf;
+    int i;
+    for(i=1;i<argc;i++){
+        fileNum=open(argv[i],O_RDONLY);
+        while((line=read(fileNum,&buf,1))>0){
+            printf("%c",buf);
+        }
+
+    } 
+    return;
+}
 //void pwd();
 //void find();
 //void wc();
 //void ps();
 //void runProgram();
 //void diff();
-//char *currFolder();
 
 int main(int argc, char *argv[]){
     //getting the current working directory
-    char *cwd = NULL;
+    char *cwd = NULL; //malloc(sizeof(*cwd));
     //int pid; //<---unused
     int status;
 
-    char *ptr;
-    char *ptr_too = malloc(sizeof(*ptr_too));
+    char *ptr;// malloc(sizeof(*ptr));
+    char *ptr_too;// malloc(sizeof(*ptr_too));
     char *foldertmp;
     char *folder;
 
@@ -60,10 +74,10 @@ int main(int argc, char *argv[]){
     }
 
     /* // Display each command-line argument.
-    printf( "\nCommand-line arguments:\n" );
-    for( count = 0; count < argc; count++ ){
-        printf( "  argv[%d]   %s\n", count, argv[count] );
-    }//*/
+printf( "\nCommand-line arguments:\n" );
+for( count = 0; count < argc; count++ ){
+printf( " argv[%d] %s\n", count, argv[count] );
+}//*/
 
     char *line = NULL;
     char *yarn = NULL;
@@ -81,7 +95,6 @@ int main(int argc, char *argv[]){
 
                 //exit the terminal
                 if(strcmp(yarn,"exit")==0){
-                    printf("Let me out!!!!\n");
                     return 0;
                 }
 
@@ -104,7 +117,6 @@ int main(int argc, char *argv[]){
 
                 //print the working directory
                 else if(strcmp(yarn,"pwd")==0){
-                    printf("pwd?\n");
                     int cpid = fork();
                     if(cpid == -1) //fork failed
                         printf("fork failed. ...now what...?");
@@ -125,7 +137,17 @@ int main(int argc, char *argv[]){
                 //list files in current directory
                 else if(strcmp(yarn,"ls")==0){
                     ls();
-                    //printf("files in this directory: i dont know... ask again later...\n");
+                    break;
+                }
+                else if(strcmp(yarn,"cat")){
+                    char **argv = malloc(sizeof(**argv));
+                    int argc = 0;
+                    while(yarn!=NULL){
+                        yarn = strtok(NULL, " ");
+                    argc++;
+                    argv[argc] = yarn;
+                    }
+                    cat(argc,argv);
                     break;
                 }
 
