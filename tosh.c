@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
     int status;
 
     char *ptr;
-    char *ptr_too;
+    char *ptr_too = malloc(sizeof(*ptr_too));
     char *foldertmp;
     char *folder;
 
