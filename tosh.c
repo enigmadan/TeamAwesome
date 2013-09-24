@@ -9,7 +9,24 @@
 #include <dirent.h>
 
 
+void mainline(char **ball) {
+    int status;
+    int cpid = fork();
+    if(cpid == -1) //fork failed
+        printf("fork failed. ...now what...?");
+    else if (cpid == 0) {//this is the child process
+        execvp(ball[0],ball);
+        perror("");
+        //printf("Unknown command.\n");
+        exit(0);
+        //printf("returning %d\n", cpid);
+    }
+    else { //this is the parent process
+        //pid =
+        waitpid(cpid, &status, 0);
+    }
 
+}
 
 //void cd();
 //void pwd();
@@ -112,8 +129,15 @@ printf( " argv[%d] %s\n", count, argv[count] );
                 }else if(pipe == 1){
                     printf("Pipe?\n");
                 }else if(iored == 1){
+                    char *filename = "foo.txt";
                     printf("IO redirect\n");
+                    int fid = open(filename, O_WRONLY | O_CREAT, 0666); 
+                    close(1);
+                    dup(fid);
+                    mainline(ball);
+                    close(fid);
                 }else{
+
 
                 }
 
