@@ -10,42 +10,8 @@
 
 
 
-int ls(void){
-    //struct stat *buf;
-    //char *path;
-  DIR *d;
-  struct dirent *dir;
-  d = opendir(".");
-  if (d)
-  {
-    while ((dir = readdir(d)) != NULL)
-    {
-        //stat(dir->d_name,buf);
-        //printf("%s\n", buf->st_mode);
-        printf("%s\n", dir->d_name);
-    }
 
-    closedir(d);
-  }
-
-  return(0);
-}
 //void cd();
-void cat(int argc, char **argv){
-    printf("%d\n", argc);
-    int fileNum;
-    int line;
-    char buf;
-    int i;
-    for(i=1;i<argc;i++){
-        fileNum=open(argv[i],O_RDONLY);
-        while((line=read(fileNum,&buf,1))>0){
-            printf("%c",buf);
-        }
-
-    } 
-    return;
-}
 //void pwd();
 //void find();
 //void wc();
@@ -60,7 +26,7 @@ int main(int argc, char *argv[]){
     int status;
 
     char *ptr;// malloc(sizeof(*ptr));
-    char *ptr_too;// malloc(sizeof(*ptr_too));
+    char *ptr_too = malloc(40*sizeof(char));
     char *foldertmp;
     char *folder;
 
@@ -83,16 +49,81 @@ printf( " argv[%d] %s\n", count, argv[count] );
     char *yarn = NULL;
     size_t len = 0;
     ssize_t read;
+    char *ball[40];
+    ball[0] = NULL;
 
     while(1) {
         printf("%s[tosh %s]$%s", "\x1B[36m", folder, "\x1B[0m");
         if((read = getline(&line, &len, stdin)) != -1){
             line = strtok(line, "\n"); //remove the newline character
             yarn = strtok(line, " "); //tokenize by spaces
+            int h = 0;
+            while(yarn!=NULL && h<19){
+                //printf("%d",h);
+                ball[h] = yarn;
+                //printf(">%s<\n", yarn); //printing current token
+                //printf("%s\n", ball[h]);
+                yarn = strtok(NULL, " ");
+                h++;
+            }
+            ball[h] = NULL;
+            if(h<20){
+                if(ball[0]==NULL){
+                    //printf("enter something please\n");
+                }else if(strcmp(ball[0],"exit")==0){
+                    return 0;
+                }else if(strcmp(ball[0],"cd")==0){
+                    if (chdir(ball[1]) != 0) //if chdir failed,
+                        perror(""); //print the error
+                    else //else chdir worked,
+                        ptr = getcwd(cwd,(size_t)pathconf(".", _PC_PATH_MAX));//get the new cwd
+                        strcpy(ptr_too,ptr);
+                    foldertmp = strtok(ptr_too, "/");
+                    while(foldertmp != NULL){
+                        folder = foldertmp;
+                        foldertmp = strtok(NULL, "/");
+                    }
+                }else{
+                    int cpid = fork();
+                    if(cpid == -1) //fork failed
+                        printf("fork failed. ...now what...?");
+                    else if (cpid == 0) {//this is the child process
+                        execvp(ball[0],ball);
+                        printf("Unknown command.\n");
+                        exit(0);
+                        //printf("returning %d\n", cpid);
+                    }
+                    else { //this is the parent process
+                        //pid = 
+                        waitpid(cpid, &status, 0);
+                    }
+                    printf("\n");
+                    //return cpid;
+                }
 
-            while(yarn!=NULL){
-                printf(">%s<\n", yarn); //printing current token
+                /*
+                printf("%d\n", h);
+                int i=0;
+                for(i=0;i<h;i++){
+                    printf("%s\n", ball[i]);
+                    printf("%d\n", i);
+                }//*/
+            }else{
+                printf("Too many arguments.\n");
+            }
 
+        }
+
+    }
+
+    if (line)
+        free(line);
+    return 0;
+}
+
+
+
+      /*
                 //exit the terminal
                 if(strcmp(yarn,"exit")==0){
                     return 0;
@@ -111,7 +142,6 @@ printf( " argv[%d] %s\n", count, argv[count] );
                         folder = foldertmp;
                         foldertmp = strtok(NULL, "/");
                     }
-
                     break;
                 }
 
@@ -126,7 +156,8 @@ printf( " argv[%d] %s\n", count, argv[count] );
                         return cpid;
                     }
                     else { //this is the parent process
-                        /*pid = */waitpid(cpid, &status, 0);
+                        //pid = 
+                        waitpid(cpid, &status, 0);
 
                         //printf("cpid=%d\n",cpid);
                         //printf("just recieved %d\n", pid);
@@ -136,18 +167,11 @@ printf( " argv[%d] %s\n", count, argv[count] );
 
                 //list files in current directory
                 else if(strcmp(yarn,"ls")==0){
-                    ls();
+                    //ls();
                     break;
                 }
                 else if(strcmp(yarn,"cat")){
-                    char **argv = malloc(sizeof(**argv));
-                    int argc = 0;
-                    while(yarn!=NULL){
-                        yarn = strtok(NULL, " ");
-                    argc++;
-                    argv[argc] = yarn;
-                    }
-                    cat(argc,argv);
+                    //cat(argc,argv);
                     break;
                 }
 
@@ -155,16 +179,4 @@ printf( " argv[%d] %s\n", count, argv[count] );
                 else {
                     printf("%s: Command not found.\n", yarn);
                     break;
-                }
-                printf("%s\n", yarn);
-                yarn = strtok(NULL, " ");
-            }
-
-        }
-
-    }
-
-    if (line)
-        free(line);
-    return 0;
-}
+                }*/
